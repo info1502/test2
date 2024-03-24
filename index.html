@@ -1,29 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Chess Milosz</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="UTF-8">
+    <title>Szachownica 3D jako tło</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+    </style>
 </head>
 <body>
-	<header>
-		<nav>
-			<ul>
-				<li><a href="#">Strona główna</a></li>
-				<li><a href="#">O nas</a></li>
-				<li><a href="#">Kontakt</a></li>
-				<li><a href="#">Zmiana Chess Kontakt</a></li>
-			</ul>
-		</nav>
-	</header>
-	<main>
-		<h1>Witaj na stronie <span>Chess Milosz</span></h1>
-		<p>Tutaj znajdziesz wiele informacji o szachach.</p>
-	</main>
-</body>
-    <button><span class="icon">&#9812;</span> Dołącz do nas</button>
-	</main>
-	<footer>
-		<p>Chess Milosz &copy; 2023</p>
-	</footer>
-<link rel="stylesheet" href="style.css">
-</html>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Inicjalizacja sceny, kamery i renderera
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Utworzenie planszy szachowej 3D
+        const boardSize = 8;
+        const squareSize = 1;
+
+        for (let x = 0; x < boardSize; x++) {
+            for (let y = 0; y < boardSize; y++) {
+                const geometry = new THREE.BoxGeometry(squareSize, squareSize, squareSize);
+                const material = new THREE.MeshBasicMaterial({ color: (x + y) % 2 === 0 ? 0xffffff : 0x000000 });
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(x * squareSize - 3.5, 0, y * squareSize - 3.5);
+                scene.add(cube);
+            }
+        }
+
+        // Ustawienie pozycji kamery
+        camera.position.z = 5;
+
+        // Dodanie animacji
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            // Obrót planszy
+            scene.rotation.x += 0.005;
+            scene.rotation.y += 0.005;
+
+            renderer.render(scene, camera);
+        };
+
+        animate();
+    </script>
+    <link rel="stylesheet" href="style.css">
+	<h1>Logowanie</h1>
+	<form>
+		<label for="username">Nazwa użytkownika:</label>
+		<input type="text" id="username" name="username" required="">
+		<br><br>
+		<label for="password">Hasło:</label>
+		<input type="password" id="password" name="password" required="">
+		<br><br>
+		<input type="submit" value="Zaloguj">
+	</form>
+	<br><br>
+	<h1>Rejestracja</h1>
+	<form>
+		<label for="newusername">Nowa nazwa użytkownika:</label>
+		<input type="text" id="newusername" name="newusername" required="">
+		<br><br>
+		<label for="newpassword">Nowe hasło:</label>
+		<input type="password" id="newpassword" name="newpassword" required="">
+		<br><br>
+		<input type="submit" value="Zarejestruj">
+	</form>
+	<script>
+		// Funkcja sprawdzająca, czy użytkownik jest już zarejestrowany
+    function checkUserExists(username) {
+        var users = JSON.parse(localStorage.getItem('users'));
+        if (users) {
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].username === username) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Funkcja dodająca nowego użytkownika do localStorage
+    function addUser(username, password, isAdmin) {
+        var users = JSON.parse(localStorage.getItem('users'));
+        if (!users) {
+            users = [];
+        }
+        users.push({username: username, password: password, isAdmin: isAdmin});
+        localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    // Pobierz elementy formularza logowania
+        var loginForm = document.getElementsByTagName('form')[0];
+        var loginUsername = document.getElementById('username');
+        var loginPassword = document.getElementById('password');
+
+        // Dodaj event listener dla formularza logowania
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Uniemożliwia przeładowanie strony po naciśnięciu przycisku submit
+            var usernameValue = loginUsername.value;
+            var passwordValue = loginPassword.value;
+
+            // Sprawdź, czy użytkownik jest już zarejestrowany i czy podał poprawne hasło
+            var users = JSON.parse(localStorage.getItem('users'));
+            if (users) {
+                for (var i = 0; i < users.length; i++) {
+                    if (users[i].username === usernameValue && users[i].password === passwordValue) {
+                        // Ustaw zalogowanego użytkownika jako currentplayer w local storage
+                        localStorage.setItem('currentplayer', usernameValue);
+                        // Przekieruj użytkownika na odpowiednią stronę
+                        if (users[i].isAdmin) {
+                            window.location.replace("file:///C:/Users/HP/Desktop/Mi%C5%82osz/Chess%20Milosz/admin/index.html?user=" + encodeURIComponent(usernameValue));
+                        } else {
+                            window.location.replace("file:///C:/Users/HP/Desktop/Mi%C5%82osz/Chess%20Milosz/profilowa/index.html?user=" + encodeURIComponent(usernameValue));
+                        }
+                        return;
+                    }
+                }
+            }
+            alert('Nieprawidłowa nazwa użytkownika lub hasło!');
+        });
+
+
+    // Pobierz elementy formularza rejestracji
+    var registerForm = document.getElementsByTagName('form')[1];
+    var registerUsername = document.getElementById('newusername');
+    var registerPassword = document.getElementById('newpassword');
+    // Dodaj event listener	
+    registerForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Uniemożliwia przeładowanie strony po naciśnięciu przycisku submit
+        var usernameValue = registerUsername.value;
+        var passwordValue = registerPassword.value;
+        // Sprawdź, czy użytkownik o takiej nazwie już istnieje
+        if (checkUserExists(usernameValue)) {
+            alert('Użytkownik o takiej nazwie już istnieje!');
+            return;
+        }
+        // Dodaj nowego użytkownika do localStorage i wyświetl komunikat o sukcesie
+        var isAdmin = false;
+        if (usernameValue === "Milosz-2012" || usernameValue === "ChessDragon_07") {
+            isAdmin = true;
+        }
+        addUser(usernameValue, passwordValue, isAdmin);
+        alert('Rejestracja przebiegła pomyślnie!');
+        registerForm.reset();
+    });
+	</script>
+  </body>
+  </html>
